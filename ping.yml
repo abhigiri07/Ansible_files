@@ -1,0 +1,14 @@
+---
+- name: check connectivity to a list of hosts
+  hosts: localhost
+  tasks:
+    - name: check the connectivity by using ping command
+      ansible.builtin.ping:
+
+
+
+
+# ansible-playbook ping.yml --syntax-check --> checks the syntax of the playbook without executing it
+
+# ansible-playbook ping.yml --> executes the playbook 
+

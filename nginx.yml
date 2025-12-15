@@ -1,0 +1,27 @@
+---
+- name: Install and start nginx
+  hosts: localhost
+  become: true
+  connection: local
+
+  tasks:
+    - name: Start and enable httpd
+      ansible.builtin.systemd:
+        name: httpd
+        state: stopped
+    
+    - name: Install nginx
+      ansible.builtin.dnf:
+        name: nginx
+        state: present
+    
+    - name: Start and enable httpd
+      ansible.builtin.systemd:
+        name: nginx
+        state: started
+        enabled: true
+
+    - name: Deploy index.html file
+      ansible.builtin.copy:
+        dest: /usr/share/nginx/html/index.html
+        content: "<h1> Hello, Nginx Deployed via Ansible </h1>"

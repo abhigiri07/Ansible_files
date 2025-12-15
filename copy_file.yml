@@ -1,0 +1,8 @@
+---
+- name: Copy file with owner and permissions
+  hosts: localhost
+  tasks:
+    - name: Copy the file to destination with specific owner and permissions
+      ansible.builtin.copy:
+        src: /root/ansible.txt
+        dest: /home/ec2-user/aws 

@@ -1,0 +1,48 @@
+# LAMP -> Linux, httpd, mariaDB, PHP
+# httpd, maraidb105-server, php, php-fpm, php-mysqlnd
+---
+- name: Install and start LAMP stack
+  hosts: localhost
+  become: true
+
+  tasks:
+  - name: Install httpd
+    ansible.builtin.dnf:
+      name: httpd
+      state: present
+ 
+  - name: Install MariaDB server
+    ansible.builtin.dnf:
+      name: mariadb105-server
+      state: present
+  
+  - name: Install PHP and modules
+    ansible.builtin.dnf:
+      name:
+        - php
+        - php-fpm
+        - php-mysqlnd
+      state: present
+
+  - name: Start and enable httpd
+    ansible.builtin.systemd:
+      name: httpd
+      state: started
+      enabled: true
+
+  - name: Start and enable MariaDB
+    ansible.builtin.systemd:
+      name: mariadb
+      state: started
+      enabled: true
+  
+  - name: start and enable php-fpm
+    ansible.builtin.systemd:
+      name: php-fpm
+      state: started
+      enabled: true
+  
+  - name: Deploy index.php file
+    ansible.builtin.copy:
+      dest: /var/www/html/index.php
+      content: "<?php phpinfo(); ?>"
