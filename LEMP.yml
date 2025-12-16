@@ -1,0 +1,53 @@
+# LEMP -> Linux, nginx, mariaDB, PHP
+# nginx, maraidb105-server, php, php-fpm, php-mysqlnd
+---
+- name: Install and start LEMP stack
+  hosts: localhost
+  become: true
+
+  tasks:
+    - name: Stopped httpd        # httpd is stopped that previously installed
+      ansible.builtin.systemd:
+        name: httpd
+        state: stopped
+
+    - name: Install nginx      # install nginx 
+      ansible.builtin.dnf:
+        name: nginx
+        state: present
+
+    - name: Install MariaDB server
+      ansible.builtin.dnf:
+        name: mariadb105-server
+        state: present
+
+    - name: Install PHP and modules
+      ansible.builtin.dnf:
+        name:
+          - php
+          - php-fpm
+          - php-mysqlnd
+        state: present
+
+    - name: Start and enable nginx
+      ansible.builtin.systemd:
+        name: nginx
+        state: started
+        enabled: true
+
+    - name: Start and enable MariaDB
+      ansible.builtin.systemd:
+        name: mariadb
+        state: started
+        enabled: true
+
+    - name: start and enable php-fpm
+      ansible.builtin.systemd:
+        name: php-fpm
+        state: started
+        enabled: true
+
+    - name: Deploy index.php file
+      ansible.builtin.copy:
+        dest: /usr/share/nginx/html/index.php
+        content: "<?php phpinfo(); ?>"
