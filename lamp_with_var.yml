@@ -1,0 +1,63 @@
+# variable -> dynamic value assignment
+---
+- name: convert LEMP to LAMP stack with variable
+  hosts: localhost
+  become: true
+
+  vars:
+    old_web_pkg: nginx
+    web_pkg: httpd
+    database_pkg: mariadb105-server
+    php_pkg:
+      - php
+      - php-fpm
+      - php-mysqlnd
+    
+    web_service: httpd
+    database_service: mariadb
+    php_service: php-fpm
+    web_root: /var/www/html/index.php
+  
+  tasks:
+    - name: Stopped nginx        # nginx is stopped that previously installed
+      ansible.builtin.systemd:
+        name: "{{ old_web_pkg }}"
+        state: stopped
+
+    - name: Install httpd      # install httpd 
+      ansible.builtin.dnf:
+        name: "{{ web_pkg }}"
+        state: present
+
+    - name: Install MariaDB server
+      ansible.builtin.dnf:
+        name: "{{ database_pkg }}"
+        state: present
+
+    - name: Install PHP and modules
+      ansible.builtin.dnf:
+        name: "{{php_pkg}}"
+        state: present
+
+    - name: Start and enable httpd
+      ansible.builtin.systemd:
+        name: "{{ web_service }}"
+        state: started
+        enabled: true
+
+    - name: Start and enable MariaDB
+      ansible.builtin.systemd:
+        name: "{{ database_service }}"
+        state: started
+        enabled: true
+
+    - name: start and enable php-fpm
+      ansible.builtin.systemd:
+        name: "{{ php_service }}"
+        state: started
+        enabled: true
+
+    - name: Deploy index.php file
+      ansible.builtin.copy:
+        dest: "{{ web_root }}"
+        content: "<?php phpinfo(); ?>"

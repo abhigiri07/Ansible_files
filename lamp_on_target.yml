@@ -1,0 +1,31 @@
+---
+- name: install lamp on target server
+  hosts: targetserver
+  become: true
+
+  tasks:
+    - name: install httpd, mariadb, php on target server
+      ansible.builtin.dnf:
+        name:
+          - nginx
+          - mariadb105-server
+          - php
+        state: present
+    - name: stop and disable nginx on target server
+      ansible.builtin.systemd:
+        name: nginx
+        state: stopped
+        enabled: false
+    - name: start and enable httpd, mariadb, php-fpm on target server
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        state: started
+        enabled: true
+      loop:
+        - httpd
+        - mariadb
+        - php-fpm
+    - name: deploy index.php on target server
+      ansible.builtin.copy:
+        dest: /var/www/html/index.html
+        content: "<h1>LAMP Server is Successfully Installed</h1>"
