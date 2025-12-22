@@ -1,0 +1,48 @@
+---
+- name: Playbook with handler (Corrected)
+  hosts: target_servers
+  become: true
+
+  vars:
+    pkg: nginx
+    svc: nginx
+    file_path: /usr/share/nginx/html/index.html
+    conf_file: /etc/nginx/conf.d/custom.conf
+
+  tasks:
+    - name: Install Nginx
+      ansible.builtin.dnf:
+        name: "{{ pkg }}"
+        state: present
+
+    - name: Start and enable Nginx service
+      ansible.builtin.systemd_service:
+        name: "{{ svc }}"
+        state: started
+        enabled: true
+
+    - name: Add configuration file for Nginx
+      ansible.builtin.blockinfile:
+        path: "{{ conf_file }}"
+        create: true
+        block: |
+          server {
+              listen 80;
+
+              location / {
+                  root /usr/share/nginx/html;
+                  index index.html index.htm;
+              }
+          }
+      notify: restart Nginx
+
+    - name: Deploy custom index.html
+      ansible.builtin.copy:
+        dest: "{{ file_path }}"
+        content: "<h1>Deployed by Ansible with handler</h1>"
+
+  handlers:
+    - name: restart Nginx
+      ansible.builtin.systemd_service:
+        name: "{{ svc }}"
+        state: restarted

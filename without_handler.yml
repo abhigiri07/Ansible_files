@@ -1,0 +1,46 @@
+---
+- name: Playbook without handler
+  hosts: target_servers
+  become: yes
+  vars:
+    pkg: nginx
+    svc: nginx
+    file_path: /usr/share/nginx/html/index.html
+    conf_file: /etc/nginx/conf.d/custom.conf
+  tasks:
+    - name: Install Nginx
+      ansible.builtin.dnf:
+        name: "{{ pkg }}"
+        state: present
+    - name: Start and enable Nginx service
+      ansible.builtin.service:
+        name: "{{ svc }}"
+        state: started
+        enabled: yes
+    - name: Add configuration file for Nginx
+      ansible.builtin.blockinfile:
+        path: "{{ conf_file }}"
+        create: yes
+        block: |
+          http {
+              server {
+                  listen 80;  
+
+                  location / {
+                      root /usr/share/nginx/html;
+                      index index.html;
+                  }
+              }
+          }
+
+      notify: restart Nginx
+
+    - name: deploy custom index.html
+      ansible.builtin.copy:
+        dest: "{{ file_path }}"
+        content: "<h1> Deployed by Ansible without handler </h1>"
+  handlers:
+    - name: restart Nginx
+      ansible.builtin.service:
+        name: "{{ svc }}"
+        state: restarted
